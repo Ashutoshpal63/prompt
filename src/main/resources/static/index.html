@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Gemini Prompt Generator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center">
+
+<div class="bg-white p-6 rounded-lg shadow-md w-full max-w-xl">
+    <h1 class="text-2xl font-bold mb-4 text-center">Gemini Prompt Generator</h1>
+
+    <!-- PROMPT -->
+    <textarea
+            id="prompt"
+            placeholder="Enter your prompt..."
+            class="w-full border p-2 rounded mb-3 h-28"
+    ></textarea>
+
+    <button
+            onclick="generateResponse()"
+            class="bg-blue-600 text-white px-4 py-2 rounded w-full hover:bg-blue-700"
+    >
+        Generate
+    </button>
+
+    <!-- RESPONSE -->
+    <div class="mt-4">
+        <h2 class="font-semibold mb-1">Response:</h2>
+        <pre id="response" class="bg-gray-100 p-3 rounded text-sm whitespace-pre-wrap"></pre>
+    </div>
+</div>
+
+<script>
+    async function generateResponse() {
+        const apiKey = “API KEY HERE“
+      const prompt = document.getElementById("prompt").value;
+        const responseBox = document.getElementById("response");
+
+        if (!apiKey || !prompt) {
+            alert("API key and prompt are required");
+            return;
+        }
+
+        responseBox.textContent = "Generating...";
+
+        try {
+            // 1️⃣ Call Gemini API
+            const geminiRes = await fetch(
+                `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash:generateContent?key=${apiKey}`,
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        contents: [
+                            {
+                                parts: [{ text: prompt }],
+                            },
+                        ],
+                    }),
+                }
+            );
+
+            const geminiData = await geminiRes.json();
+            const generatedText =
+                geminiData?.candidates?.[0]?.content?.parts?.[0]?.text ||
+                "No response";
+
+            responseBox.textContent = generatedText;
+
+            // 2️⃣ Send POST request to Spring Boot
+            await fetch("http://localhost:8080/add-request", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    prompt: prompt,
+                    response: generatedText,
+                }),
+            });
+
+            console.log("Data sent to backend successfully");
+        } catch (err) {
+            console.error(err);
+            responseBox.textContent = "Error generating response";
+        }
+    }
+</script>
+</body>
+</html>
