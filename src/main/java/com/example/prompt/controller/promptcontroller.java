@@ -2,13 +2,11 @@ package com.example.prompt.controller;
 
 import com.example.prompt.DTO.promptresponseDTO;
 import com.example.prompt.service.promptservice;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("api/prompt")
+@CrossOrigin
 public class promptcontroller {
     private final promptservice promptservice;
     public promptcontroller(promptservice promptservice){
